@@ -224,15 +224,110 @@
   text-overflow: ellipsis;
 }
 
-.progress-task-status {
-  font-size: 12px;
-  color: var(--ink-faint);
-  margin-left: auto;
-  white-space: nowrap;
+.progress-task-status-select {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  min-width: 130px;
+}
+
+.progress-task-status-select:focus {
+  border-color: #6c63ff;
 }
 
 .progress-task-bar {
   padding-top: 14px;
+}
+
+/* Pretty Custom Subtask Checklist Container */
+/* Compact & Pretty Subtasks Checklist Container */
+.subtasks-checklist-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3px; /* Pehle gap zyada tha, ab bohot close aur clean hoga */
+  padding: 8px 12px;
+  margin-top: 6px; /* Task bar aur subtasks ke beech ka gap kum kiya */
+  margin-bottom: 4px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 8px;
+  border: 1px solid rgba(220, 220, 230, 0.4);
+  backdrop-filter: blur(6px);
+}
+
+/* Compact Subtask Item Row */
+.subtask-item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Checkbox aur Text ke beech ka distance compact kiya */
+  padding: 4px 8px; /* Vertical height aur padding kum ki */
+  border-radius: 6px;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+  user-select: none;
+}
+
+.subtask-item-row:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* Pretty Custom Checkbox Design */
+.custom-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px; /* Compact size */
+  height: 16px;
+  border: 2px solid #b4b4c4;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: #ffffff;
+  flex-shrink: 0; /* Align perfectly without squeezing */
+}
+
+.custom-checkbox:hover {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+.custom-checkbox:checked {
+  background-color: #6366f1;
+  border-color: #6366f1;
+}
+
+.custom-checkbox::before {
+  content: "";
+  width: 9px;
+  height: 5px;
+  border-left: 2px solid white;
+  border-bottom: 2px solid white;
+  transform: rotate(-45deg) scale(0);
+  transition: transform 0.15s ease-in-out;
+  margin-top: -2px;
+}
+
+.custom-checkbox:checked::before {
+  transform: rotate(-45deg) scale(1);
+}
+
+/* Subtask Text Label */
+.subtask-label-text {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #334155;
+  transition: all 0.2s ease;
+  line-height: 1.2;
+}
+
+.subtask-item-row.completed .subtask-label-text {
+  text-decoration: line-through;
+  color: #94a3b8;
 }
 
 @media (max-width: 900px) {

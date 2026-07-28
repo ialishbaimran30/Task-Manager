@@ -51,7 +51,7 @@ function Register() {
 
           <label className="field">
             <span>Email</span>
-            <input type="email"name="email"placeholder="Email"value={formData.email}onChange={handleChange}required/>
+            <input type="email"name="email" className="auth-input" placeholder="Email"value={formData.email}onChange={handleChange}required/>
           </label>
           <label className="field">
             <span>Password</span>

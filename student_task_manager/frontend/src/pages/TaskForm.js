@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../services/api";
 import CategoryModal from "../components/CategoryModal";
-import TagModal from "../components/TagModal";
+// import TagModal from "../components/TagModal";
 import Sidebar from "../components/Sidebar";
 import { showToast } from "../utils/toast";
 import "../styles/taskform.css";
@@ -30,24 +30,24 @@ function TaskForm() {
   const [priority, setPriority] = useState(draft?.priority || "Medium");
   const [status, setStatus] = useState(draft?.status || "Pending");
   const [category, setCategory] = useState(draft?.category || "");
-  const [tag, setTag] = useState(draft?.tag || "");
   const [categories, setCategories] = useState([]);
-  const [tags, setTags] = useState([]);
   const [showCategory, setShowCategory] = useState(false);
-  const [showTag, setShowTag] = useState(false);
-
+  const [hasSubtasks, setHasSubtasks] = useState(draft?.hasSubtasks || false);
+  const [subtasks, setSubtasks] = useState(draft?.subtasks || []);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState("")
+  
 
   useEffect(() => {
     if (id) return; 
     sessionStorage.setItem(
       DRAFT_KEY,
-      JSON.stringify({ title, description, dueDate, dueTime, priority, status, category, tag })
+      JSON.stringify({ title, description, dueDate, dueTime, priority, status, category,})
     );
-  }, [id, title, description, dueDate, dueTime, priority, status, category, tag]);
+  }, [id, title, description, dueDate, dueTime, priority, status, category, ]);
 
   useEffect(() => {
     loadCategories();
-    loadTags();
+
     if (id) {
       api.get(`/tasks/api/${id}/`).then((res) => {
         const task = res.data;
@@ -58,10 +58,23 @@ function TaskForm() {
         setPriority(task.priority);
         setStatus(task.status);
         setCategory(task.category);
-        setTag(task.tags[0]);
+        if (task.subtasks && task.subtasks.length > 0) {
+          setHasSubtasks(true);
+          setSubtasks(task.subtasks);
+        }
       });
     }
   }, [id]);
+
+  const addSubtaskItem = () => {
+    if (!newSubtaskTitle.trim()) return;
+    setSubtasks([...subtasks, { title: newSubtaskTitle.trim(), is_completed: false }]);
+    setNewSubtaskTitle("");
+  };
+
+  const removeSubtaskItem = (index) => {
+    setSubtasks(subtasks.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -87,7 +100,7 @@ function TaskForm() {
       priority,
       status,
       category,
-      tags: tag ? [tag] : [],
+      subtasks: hasSubtasks ? subtasks : [],
     };
 
     if (id) {
@@ -124,14 +137,7 @@ function TaskForm() {
     }).catch(console.log);
   };
 
-  const loadTags = () => {
-    api.get("/tasks/tags/").then((res) => {
-      setTags(res.data);
-      if (!res.data.some((t) => t.id === Number(tag))) {
-        setTag("");
-      }
-    }).catch(console.log);
-  };
+  
 
   return (
     <div className="app-shell">
@@ -143,12 +149,12 @@ function TaskForm() {
 
           <form onSubmit={handleSubmit} className="task-form-grid">
             <label className="field field-full">
-              <span>Title</span>
+              <span>Title <span style={{ color: 'red' }}>*</span></span>
               <input type="text" placeholder="Task title" value={title} onChange={(e) => setTitle(e.target.value)} />
             </label>
 
             <label className="field field-full">
-              <span>Description</span>
+              <span>Description <span style={{ color: 'red' }}>*</span></span>
               <textarea placeholder="Add more detail..." value={description} onChange={(e) => setDescription(e.target.value)} />
             </label>
 
@@ -158,7 +164,7 @@ function TaskForm() {
             </label>
 
             <label className="field">
-              <span>Deadline time (optional)</span>
+              <span>Deadline time </span>
               <input type="time" value={dueTime} onChange={(e) => setDueTime(e.target.value)} />
             </label>
 
@@ -181,7 +187,7 @@ function TaskForm() {
             </label>
 
             <label className="field">
-              <span>Category</span>
+              <span>Category <span style={{ color: 'red' }}>*</span></span>
               <select value={category} onChange={(e) => setCategory(e.target.value)}>
                 <option value="">Select category</option>
                 {categories.map((cat) => (
@@ -189,22 +195,63 @@ function TaskForm() {
                 ))}
               </select>
             </label>
+            {/* Properly Aligned Checkbox Row */}
+            <div className="subtasks-toggle-field" onClick={() => setHasSubtasks(!hasSubtasks)}>
+              <input
+                type="checkbox"
+                id="hasSubtasks"
+                className="custom-form-checkbox"
+                checked={hasSubtasks}
+                onChange={(e) => setHasSubtasks(e.target.checked)}
+              />
+              <label htmlFor="hasSubtasks" className="subtask-toggle-label">
+                Does this task contain subtasks?
+              </label>
+            </div>
 
-            <label className="field field-full">
-              <span>Tag</span>
-              <select value={tag} onChange={(e) => setTag(e.target.value)}>
-                <option value="">Select tag</option>
-                {tags.map((t) => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
-              </select>
-            </label>
+            {/* Subtasks Checklist Section */}
+            {hasSubtasks && (
+              <div className="field-full subtasks-box">
+                <span style={{ fontSize: "12.5px", fontWeight: "600", color: "var(--ink-soft)" }}>Subtasks Checklist</span>
+                <div className="subtasks-input-row">
+                  <input
+                    type="text"
+                    placeholder="Enter subtask name..."
+                    value={newSubtaskTitle}
+                    onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addSubtaskItem();
+                      }
+                    }}
+                  />
+                  <button type="button" className="btn btn-primary" onClick={addSubtaskItem}>Add</button>
+                </div>
+
+                {subtasks.length > 0 && (
+                  <ul className="subtasks-list">
+                    {subtasks.map((st, index) => (
+                      <li key={index} className="subtask-list-item">
+                        <span>• {st.title}</span>
+                        <button
+                          type="button"
+                          className="btn-remove-subtask"
+                          onClick={() => removeSubtaskItem(index)}
+                        >
+                          Remove
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
 
             <div className="form-quick-actions field-full">
               <button type="button" className="btn btn-ghost" onClick={() => setShowCategory(true)}>+ Add Category</button>
-              <button type="button" className="btn btn-ghost" onClick={() => setShowTag(true)}>+ Add Tag</button>
               <button type="button" className="btn btn-ghost" onClick={() => navigate("/categories")}>Manage Categories</button>
-              <button type="button" className="btn btn-ghost" onClick={() => navigate("/tags")}>Manage Tags</button>
+    
             </div>
 
             <div className="form-submit-row field-full">
@@ -214,7 +261,7 @@ function TaskForm() {
           </form>
 
           <CategoryModal show={showCategory} onClose={() => setShowCategory(false)} refreshCategories={loadCategories} />
-          <TagModal show={showTag} onClose={() => setShowTag(false)} refreshTags={loadTags} />
+          
         </div>
       </main>
     </div>

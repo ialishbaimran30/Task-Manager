@@ -39,6 +39,123 @@
 .field-full {
   grid-column: 1 / -1;
 }
+/* Subtasks Option Checkbox Row - Grid Full Width & Left Aligned */
+.subtasks-toggle-field {
+  grid-column: 1 / -1;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-top: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Custom Pretty Checkbox Style */
+.custom-form-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #b4b4c4;
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: #ffffff;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.custom-form-checkbox:hover {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.custom-form-checkbox:checked {
+  background-color: #6366f1;
+  border-color: #6366f1;
+}
+
+.custom-form-checkbox::before {
+  content: "";
+  width: 9px;
+  height: 5px;
+  border-left: 2px solid white;
+  border-bottom: 2px solid white;
+  transform: rotate(-45deg) scale(0);
+  transition: transform 0.15s ease-in-out;
+  margin-top: -2px;
+}
+
+.custom-form-checkbox:checked::before {
+  transform: rotate(-45deg) scale(1);
+}
+
+.subtask-toggle-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-soft, #4a455a);
+  cursor: pointer;
+  margin: 0;
+}
+
+/* Compact Subtask Input & Checklist Box */
+.subtasks-box {
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(34, 31, 43, 0.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.subtasks-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.subtasks-input-row input {
+  flex: 1;
+}
+
+.subtasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* Compact spacing between subtask items */
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.subtask-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.btn-remove-subtask {
+  color: var(--accent-coral, #ff6b6b);
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 0;
+}
+
+.btn-remove-subtask:hover {
+  text-decoration: underline;
+}
 
 .form-quick-actions {
   display: flex;

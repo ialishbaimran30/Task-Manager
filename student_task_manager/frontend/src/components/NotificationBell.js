@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import "../styles/Notificationbell.css";
 
@@ -13,6 +14,7 @@ function timeAgo(iso) {
 }
 
 function NotificationBell() {
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [open, setOpen] = useState(false);
   const socketRef = useRef(null);
@@ -66,6 +68,33 @@ function NotificationBell() {
     }).catch(console.log);
   };
 
+  const handleNotificationClick = (n) => {
+    // Pehle notification ko read mark kar dein agar unread hai
+    if (!n.is_read) {
+      markOneRead(n.id);
+    }
+
+    // Dropdown close kar dein
+    setOpen(false);
+
+    // Yahan aap apne URL par navigate kar sakte hain
+    // Misal ke taur par agar backend se koi link ya group/task ID aa rahi hai:
+    if (n.link) {
+      navigate(n.link);
+    } else {
+      // Default route jahan aap user ko bhejna chahte hain (jaise team collaboration page)
+      navigate("/team"); // <-- Apka target URL/path
+    }
+  };
+
+  const clearAllNotifications = () => {
+    api.post("/tasks/notifications/clear_all/") // Apne backend ka endpoint yahan likhein agar alag ho
+      .then(() => {
+        setNotifications([]); // State ko empty kar dega
+      })
+      .catch((err) => console.log("Failed to clear notifications", err));
+  };
+
   return (
     <div className="notif-wrapper" ref={panelRef}>
       <button className="notif-bell-btn" onClick={() => setOpen((v) => !v)} title="Notifications">
@@ -83,6 +112,15 @@ function NotificationBell() {
             {unreadCount > 0 && (
               <button className="link-btn" onClick={markAllRead}>Mark all read</button>
             )}
+            {notifications.length > 0 && (
+                <button 
+                  className="link-btn" 
+                  style={{ color: "#ef4444" }} 
+                  onClick={clearAllNotifications}
+                >
+                  Clear all
+                </button>
+              )}
           </div>
 
           {notifications.length === 0 ? (
@@ -93,7 +131,8 @@ function NotificationBell() {
                 <div
                   key={n.id}
                   className={`notif-row ${n.is_read ? "" : "notif-unread"}`}
-                  onClick={() => !n.is_read && markOneRead(n.id)}
+                  onClick={() => handleNotificationClick(n)}
+                  style={{ cursor: "pointer" }}
                 >
                   <span className="notif-dot" />
                   <div>

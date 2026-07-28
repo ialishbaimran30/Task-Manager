@@ -5,8 +5,10 @@ import Dashboard from "./pages/Dashboard";
 import TaskList from "./pages/TaskList";
 import TaskForm from "./pages/TaskForm";
 import CategoryPage from "./pages/CategoryPage";
-import TagPage from "./pages/TagPage";
+import TeamCollaboration from "./pages/TeamCollaboration";
 import Register from "./pages/Register";
+
+
 
 function App() {
   return (
@@ -20,7 +22,7 @@ function App() {
           <Route path="/tasks/add" element={<TaskForm />} />
           <Route path="/tasks/edit/:id" element={<TaskForm />} />
           <Route path="/categories" element={<CategoryPage />} />
-          <Route path="/tags" element={<TagPage />} />
+          <Route path="/team" element={<TeamCollaboration />} />
           <Route path="/register" element={<Register />} />
         </Routes>
       </BrowserRouter>

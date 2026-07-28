@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import Sidebar from "../components/Sidebar";
-import TimeTracker from "../components/TimeTracker";
 import { showToast } from "../utils/toast";
 import "../styles/tasklist.css";
 
@@ -41,7 +40,7 @@ function TaskCard({ task, onEdit, onDelete, onUpdate }) {
       {task.description && <p className="kanban-desc">{task.description}</p>}
 
       <div className="kanban-card-footer">
-        <TimeTracker task={task} onUpdate={onUpdate} />
+        
         <div className="kanban-card-actions">
           <button className="icon-btn" onClick={() => onEdit(task.id)} title="Edit">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
@@ -89,9 +88,14 @@ function TaskList() {
     setTasks((prev) => prev.map((t) => (t.id === updated.id ? { ...t, ...updated } : t)));
   };
 
-  const filteredTasks = tasks.filter((t) =>
-    t.title.toLowerCase().includes(searchQuery.trim().toLowerCase())
-  );
+  // Naya code (Title + Due Date dono search honge):
+const filteredTasks = tasks.filter((t) => {
+  const query = searchQuery.trim().toLowerCase();
+  const matchTitle = t.title.toLowerCase().includes(query);
+  const matchDate = t.due_date ? t.due_date.toLowerCase().includes(query) : false;
+
+  return matchTitle || matchDate;
+});
 
   const pending = filteredTasks.filter((t) => t.status === "Pending");
   const completed = filteredTasks.filter((t) => t.status === "Completed");
