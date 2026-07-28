@@ -1,0 +1,101 @@
+/* src/styles/SmartInsights.css */
+.insights-container {
+  padding: 1.5rem;
+}
+
+.insights-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.live-tag {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.insights-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .insights-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.insight-card {
+  background: var(--bg-surface, #ffffff);
+  border-left: 4px solid #3b82f6;
+  padding: 1.2rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.insight-card.budget_mom { border-left-color: #8b5cf6; }
+.insight-card.tracked_expense { border-left-color: #10b981; }
+.insight-card.projection { border-left-color: #f59e0b; }
+
+.insight-card h4 {
+  margin: 0 0 0.4rem 0;
+  font-size: 1rem;
+}
+
+.insight-card p {
+  margin: 0;
+  color: var(--text-secondary, #4b5563);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/* Formula Box */
+.formula-sidebar-box {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.2rem;
+  height: fit-content;
+}
+
+.formula-subtitle {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-bottom: 0.8rem;
+}
+
+.formula-code-box {
+  background: #1e1e1e;
+  color: #10b981;
+  padding: 0.8rem;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.78rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.formula-stats {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.stat-row.highlight {
+  color: #3b82f6;
+}

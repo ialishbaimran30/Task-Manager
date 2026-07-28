@@ -1,0 +1,52 @@
+.budget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.budget-card {
+  padding: 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.budget-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.budget-card-head h4 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.budget-card-body {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.budget-card-figures {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.84rem;
+}
+
+.budget-card-figures .label {
+  color: var(--text-secondary);
+}
+
+.status-pill {
+  font-size: 0.72rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.status-Safe { background: var(--accent-soft); color: var(--accent); }
+.status-Warning { background: var(--warn-soft); color: var(--warn); }
+.status-Critical { background: var(--warn-soft); color: var(--warn); }
+.status-Budget.Exceeded, .status-Budget-Exceeded { background: var(--danger-soft); color: var(--danger); }
