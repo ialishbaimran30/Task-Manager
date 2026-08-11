@@ -14,13 +14,17 @@ class SubTaskSerializer(serializers.ModelSerializer):
         read_only_fields = ["task"]
 
 class Taskserializer(serializers.ModelSerializer):
-    subtasks = SubTaskSerializer(many=True, read_only=True)
+    subtasks = serializers.SerializerMethodField()
     progress = serializers.SerializerMethodField()
     
     class Meta:
         model = Task
-        fields= ["id", "user", "title", "description", "due_date","priority", "status", "category", "create_at","subtasks","progress", ]
+        fields= ["id", "user", "title", "description", "due_date","due_time","priority", "status", "category", "create_at","subtasks","progress", ]
         read_only_fields=["user","create_at"]
+
+    def get_subtasks(self, obj):
+        subtasks_qs = obj.subtasks.all().order_by("id") # Ensures stable, unchanging sequence
+        return SubTaskSerializer(subtasks_qs, many=True).data
 
     def get_progress(self, obj):
         subtasks = obj.subtasks.all()
@@ -31,7 +35,7 @@ class Taskserializer(serializers.ModelSerializer):
         return {"Pending": 0, "In Progress": 50, "Completed": 100}.get(obj.status, 0)
 
     def create(self, validated_data):
-        # Retrieve subtasks array sent from request payload
+        
         request = self.context.get('request')
         subtasks_data = request.data.get('subtasks', []) if request else []
         
@@ -51,7 +55,6 @@ class Taskserializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
 
-        # Re-sync subtasks on Task Update if provided
         if subtasks_data is not None:
             instance.subtasks.all().delete()
             for st in subtasks_data:
@@ -139,14 +142,13 @@ class TeamGroupSerializer(serializers.ModelSerializer):
         completed = tasks.filter(status="Completed").count()
         return round((completed / tasks.count()) * 100)
 
-# tasks/serializers.py (Ya jahan bhi aapka Team/Group Serializer hai)
 
 class GroupInviteSerializer(serializers.ModelSerializer):
     invited_by_username = serializers.CharField(source='invited_by.username', read_only=True)
     group_name = serializers.CharField(source='group.name', read_only=True)
 
     class Meta:
-        model = GroupInvitation # Jo bhi aapka model ho
+        model = GroupInvitation 
         fields = '__all__'
     
 class NotificationSerializer(serializers.ModelSerializer):

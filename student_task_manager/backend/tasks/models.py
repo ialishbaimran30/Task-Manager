@@ -8,12 +8,6 @@ class Category(models.Model):
     def __str__(self):
         return self.name
     
-# class Tag(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.SET_NULL, null = True)
-#     name= models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.name
     
 class Task(models.Model):
       PRIORITY_CHOICES = [
@@ -32,15 +26,17 @@ class Task(models.Model):
       description = models.TextField()
       due_date = models.DateField()
       priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES,default="Medium")
-      due_time = models.TimeField(null=True, blank=True)          
-      deadline_notified = models.BooleanField(default=False) 
-
+      due_time = models.TimeField(null=True, blank=True)
+      deadline_notified = models.BooleanField(default=False)
+      reminder_2h_sent = models.BooleanField(default=False)
+      reminder_1h_sent = models.BooleanField(default=False)
+      reminder_45m_sent = models.BooleanField(default=False)
+      reminder_30m_sent = models.BooleanField(default=False)
+      reminder_15m_sent = models.BooleanField(default=False)
       status = models.CharField(
     max_length=20,
     choices=STATUS_CHOICES,
     default="Pending")
-      
-
 
       category = models.ForeignKey(
         Category,
@@ -52,6 +48,18 @@ class Task(models.Model):
 
       def __str__(self):
           return self.title
+
+      def save(self, *args, **kwargs):
+          if self.pk:
+              previous = Task.objects.filter(pk=self.pk).values("due_date", "due_time").first()
+              if previous and (previous["due_date"] != self.due_date or previous["due_time"] != self.due_time):
+                  self.reminder_2h_sent = False
+                  self.reminder_1h_sent = False
+                  self.reminder_45m_sent = False
+                  self.reminder_30m_sent = False
+                  self.reminder_15m_sent = False
+                  self.deadline_notified = False
+          super().save(*args, **kwargs)
 
 class SubTask(models.Model):
     task = models.ForeignKey(Task, related_name="subtasks", on_delete=models.CASCADE)
@@ -132,13 +140,11 @@ class GroupTask(models.Model):
     def __str__(self):
         return f"{self.group.name} - {self.title}"
 
-# Check karein agar aapke models.py me yeh model missing hai to isko add karein:
 
 class GroupSubTask(models.Model):
     group_task = models.ForeignKey(GroupTask, related_name="subtasks", on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     is_completed = models.BooleanField(default=False)
-    # Konsa member iss individual subtask par kaam kar raha hai
     assigned_to = models.ForeignKey(
         User, 
         on_delete=models.SET_NULL, 
@@ -150,3 +156,4 @@ class GroupSubTask(models.Model):
     def __str__(self):
         assigned_name = self.assigned_to.username if self.assigned_to else "Unassigned"
         return f"{self.title} ({assigned_name})"
+

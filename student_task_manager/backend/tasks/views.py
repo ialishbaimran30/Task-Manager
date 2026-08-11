@@ -80,7 +80,7 @@ class TaskViewSet(ModelViewSet):
     permission_classes=[IsAuthenticated]
     
     def get_queryset(self):
-        queryset = Task.objects.filter(user=self.request.user)
+        queryset = Task.objects.filter(user=self.request.user).order_by('id')
         filter_type = self.request.query_params.get('filter_type', None)
         selected_date = self.request.query_params.get('due_date', None)
 
@@ -110,9 +110,8 @@ class SubTaskViewSet(ModelViewSet):
 
     def perform_update(self, serializer):
         subtask = serializer.save()
-        # Auto-update Parent Task status based on subtasks completion percentage
         parent_task = subtask.task
-        all_subtasks = parent_task.subtasks.all()
+        all_subtasks = parent_task.subtasks.all().order_by("id")
         if all_subtasks.exists():
             completed_count = all_subtasks.filter(is_completed=True).count()
             total_count = all_subtasks.count()
@@ -261,7 +260,7 @@ class GroupTaskViewSet(ModelViewSet):
         user = self.request.user
         return GroupTask.objects.filter(
             models.Q(group__created_by=user) | models.Q(group__members__user=user, group__members__status="Accepted")
-        ).distinct()
+        ).distinct().order_by('id')
 
     def destroy(self, request, *args, **kwargs):
         task = self.get_object()
@@ -293,7 +292,7 @@ from rest_framework.decorators import api_view, permission_classes
 from .models import GroupTask, Task
 from .serializers import GroupTaskSerializer
 
-# API to import existing personal Task into Workspace Group
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def import_task_to_group(request):
@@ -302,13 +301,11 @@ def import_task_to_group(request):
     
     group = get_object_or_404(TeamGroup, id=group_id)
     
-    # Check if user is group owner
     if group.created_by != request.user:
         return Response({"error": "Only group owner can import tasks."}, status=status.HTTP_403_FORBIDDEN)
         
     personal_task = get_object_or_404(Task, id=task_id, user=request.user)
     
-    # Create new GroupTask from Personal Task
     group_task = GroupTask.objects.create(
         group=group,
         created_by=request.user,
@@ -316,8 +313,7 @@ def import_task_to_group(request):
         description=personal_task.description,
         status="Pending"
     )
-    
-    # Copy all subtasks from personal task to GroupSubTask
+     
     for st in personal_task.subtasks.all():
         GroupSubTask.objects.create(
             group_task=group_task,
@@ -345,11 +341,10 @@ class GroupSubTaskViewSet(ModelViewSet):
         is_owner = group_task.group.created_by == user
 
         if not (is_subtask_assignee or is_owner):
-            raise PermissionDenied("Sirf assigned user hi is subtask ko checkmark kar sakta hai.")
+            raise PermissionDenied("Only assign user can checkmark the task.")
 
         updated_subtask = serializer.save()
 
-        # Recalculate parent GroupTask progress and status
         all_subtasks = group_task.subtasks.all()
         if all_subtasks.exists():
             completed_count = all_subtasks.filter(is_completed=True).count()
@@ -362,3 +357,4 @@ class GroupSubTaskViewSet(ModelViewSet):
             else:
                 group_task.status = "Pending"
             group_task.save()
+
