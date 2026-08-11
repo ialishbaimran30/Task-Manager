@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { GoogleLogin } from "@react-oauth/google";
 import api from "../services/api";
 import { showToast } from "../utils/toast";
 import { setAuthSession } from "../utils/authStorage";
-import "../styles/login.css";
+import "../styles/register.css";
 
-function Login() {
-  const [loading, setLoading] = useState(false);
+function Signup() {
   const navigate = useNavigate();
 
   const [step, setStep] = useState("email");
@@ -22,33 +20,12 @@ function Login() {
     return () => clearTimeout(timer);
   }, [cooldown]);
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    setLoading(true);
-    try {
-      const res = await api.post("/api/auth/google/", {
-        id_token: credentialResponse.credential,
-      });
-      localStorage.setItem("access", res.data.access);
-      localStorage.setItem("refresh", res.data.refresh);
-      localStorage.setItem("username", res.data.username);
-      console.log("Client ID:", process.env.REACT_APP_GOOGLE_CLIENT_ID);
-      showToast("Signed in successfully");
-
-      navigate("/dashboard");
-    } catch (error) {
-      console.log(error.response);
-      showToast("Google sign-in failed", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleRequestOtp = async (e) => {
     e.preventDefault();
     if (!email.trim()) return;
     setOtpLoading(true);
     try {
-      await api.post("/api/auth/otp/request/", { email, purpose: "login" });
+      await api.post("/api/auth/otp/request/", { email, purpose: "signup" });
       showToast("Verification code sent to your email.");
       setStep("otp");
       setCooldown(30);
@@ -65,7 +42,7 @@ function Login() {
     if (!code.trim()) return;
     setOtpLoading(true);
     try {
-      const res = await api.post("/api/auth/otp/verify/", { email, code, purpose: "login" });
+      const res = await api.post("/api/auth/otp/verify/", { email, code, purpose: "signup" });
       setAuthSession(res.data);
       showToast("Signed in successfully");
       navigate("/dashboard");
@@ -93,8 +70,8 @@ function Login() {
             <circle cx="18" cy="18" r="2.3" fill="currentColor" />
           </svg>
         </div>
-        <h1>Welcome back</h1>
-        <p className="auth-sub">Sign in to keep tasks moving</p>
+        <h1>Create your account</h1>
+        <p className="auth-sub">Sign up with your email to get started</p>
 
         {step === "email" ? (
           <form className="auth-form" onSubmit={handleRequestOtp}>
@@ -127,7 +104,7 @@ function Login() {
               />
             </div>
             <button type="submit" className="btn btn-primary auth-submit" disabled={otpLoading}>
-              {otpLoading ? "Verifying…" : "Verify & Sign in"}
+              {otpLoading ? "Verifying…" : "Verify & Create account"}
             </button>
             <div className="auth-switch">
               <button type="button" className="change-email-link" onClick={handleChangeEmail}>
@@ -146,29 +123,12 @@ function Login() {
           </form>
         )}
 
-        <p className="auth-divider">or</p>
-
-        <div className="google-btn-wrap">
-          {loading ? (
-            <p className="auth-sub">Signing in…</p>
-          ) : (
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={() => showToast("Google sign-in failed", "error")}
-              size="large"
-              shape="pill"
-              text="continue_with"
-              width="320"
-            />
-          )}
-        </div>
-
         <p className="auth-switch">
-          Don't have an account? <Link to="/signup">Sign up</Link>
+          Already have an account? <Link to="/">Log in</Link>
         </p>
       </div>
     </div>
   );
 }
 
-export default Login;
+export default Signup;

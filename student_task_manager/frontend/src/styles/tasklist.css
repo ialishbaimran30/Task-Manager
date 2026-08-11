@@ -35,12 +35,15 @@
   border-radius: 999px;
   padding: 9px 16px;
   color: var(--ink-faint);
+  min-width: 0;
 }
 .search-box input {
   border: none;
   background: none;
   padding: 0;
   width: 200px;
+  max-width: 100%;
+  min-width: 0;
 }
 .search-box input:focus {
   background: none;
@@ -173,4 +176,10 @@
 
 @media (max-width: 768px) {
   .kanban-board { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .task-header-actions { flex-wrap: wrap; width: 100%; }
+  .search-box { flex: 1 1 100%; }
+  .search-box input { width: 100%; }
 }

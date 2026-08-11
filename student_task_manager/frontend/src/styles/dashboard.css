@@ -337,3 +337,21 @@
     gap: 10px;
   }
 }
+
+/* Dashboard.js sets layout (display/gridTemplateColumns/etc.) inline on
+   these same classes, which normally beats any stylesheet rule including
+   the ones above - !important is required to actually override it. */
+@media (max-width: 768px) {
+  .dash-main { padding: 20px !important; }
+  .dash-grid { grid-template-columns: 1fr !important; }
+  .dash-schedule-grid { grid-template-columns: 1fr !important; }
+  .progress-task-row { grid-template-columns: 1fr !important; gap: 10px !important; }
+  .dash-overview { flex-direction: column !important; align-items: flex-start !important; gap: 16px !important; }
+}
+
+@media (max-width: 480px) {
+  .dash-main { padding: 14px !important; }
+  .dash-topbar { flex-wrap: wrap !important; gap: 10px !important; }
+  .overview-stats { flex-wrap: wrap !important; gap: 14px !important; }
+  .progress-task-main { flex-wrap: wrap !important; }
+}

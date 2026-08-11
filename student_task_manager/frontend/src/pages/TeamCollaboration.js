@@ -12,17 +12,11 @@ export default function TeamCollaboration() {
   const [invitations, setInvitations] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [userPersonalTasks, setUserPersonalTasks] = useState([]);
-
-  // Form states
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupDesc, setNewGroupDesc] = useState("");
   const [inviteUsername, setInviteUsername] = useState("");
-
-  // Assign Existing Task states
   const [selectedExistingTaskId, setSelectedExistingTaskId] = useState("");
   const [selectedAssignees, setSelectedAssignees] = useState([]);
-
-  // Modal Control & Modal Form States
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalDescription, setModalDescription] = useState("");
@@ -32,7 +26,6 @@ export default function TeamCollaboration() {
   const currentUser = localStorage.getItem("username");
 
   const fetchData = () => {
-    // 1. Fetch Team Groups
     api.get("/tasks/groups/").then((res) => {
       setGroups(res.data);
       if (selectedGroup) {
@@ -41,12 +34,12 @@ export default function TeamCollaboration() {
       }
     });
 
-    // 2. Fetch Group Invitations
+   
     api.get("/tasks/groups/my_invitations/").then((res) => {
       setInvitations(res.data);
     });
 
-    // 3. Fetch Personal Tasks
+    
     api
       .get("/tasks/api/")
       .then((res) => {
@@ -65,12 +58,11 @@ export default function TeamCollaboration() {
     fetchData();
   }, []);
 
-  // Dropdown Select Existing Task
   const handleSelectExistingTask = (e) => {
     setSelectedExistingTaskId(e.target.value);
   };
 
-  // Group Creation
+  
   const handleCreateGroup = (e) => {
     e.preventDefault();
     if (!newGroupName.trim()) return;
@@ -83,7 +75,6 @@ export default function TeamCollaboration() {
     });
   };
 
-  // Invite Handler
   const handleSendInvite = (e) => {
     e.preventDefault();
     if (!inviteUsername.trim() || !selectedGroup) return;
@@ -148,7 +139,6 @@ export default function TeamCollaboration() {
     });
   };
 
-  // Checkbox Handler for Member Selection in Import Section
   const handleAssigneeCheckboxChange = (userId) => {
     if (selectedAssignees.includes(userId)) {
       setSelectedAssignees(selectedAssignees.filter((id) => id !== userId));
@@ -157,7 +147,7 @@ export default function TeamCollaboration() {
     }
   };
 
-  // Existing Task Assign Handler
+
   const handleAssignImportedTask = async (e) => {
     e.preventDefault();
     if (!selectedExistingTaskId || !selectedGroup) return;
@@ -212,7 +202,7 @@ export default function TeamCollaboration() {
     }
   };
 
-  // Modal Task Creation Handler
+  
   const handleCreateTaskFromModal = async (e) => {
     e.preventDefault();
     if (!modalTitle.trim() || !selectedGroup) return;
@@ -262,7 +252,7 @@ export default function TeamCollaboration() {
     }
   };
 
-  // Modal Subtask Fields Handlers
+
   const handleAddSubtaskField = () => {
     setModalSubtasks([...modalSubtasks, ""]);
   };
@@ -278,7 +268,7 @@ export default function TeamCollaboration() {
     setModalSubtasks(updated);
   };
 
-  // Checkbox Handler for Member Selection inside Modal
+ 
   const handleModalAssigneeCheckboxChange = (userId) => {
     if (modalAssignees.includes(userId)) {
       setModalAssignees(modalAssignees.filter((id) => id !== userId));
@@ -307,7 +297,7 @@ export default function TeamCollaboration() {
       .catch((err) => toast(err.response?.data?.detail || "Could not reassign subtask"));
   };
 
-  // Subtask Completion Toggle
+  
   const handleToggleSubtask = (subtask) => {
     const isSubtaskAssignedToMe = subtask.assigned_to_details?.username === currentUser;
     
@@ -423,8 +413,8 @@ export default function TeamCollaboration() {
       {!selectedGroup ? (
         <div>
           <h1 style={{ fontSize: "28px", fontWeight: "700", color: "#0f172a", marginBottom: "24px" }}>Team Workspace</h1>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
-            
+          <div className="team-groups-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+
             {/* Create Group Form */}
             <div className="modern-card">
               <h3 style={{ margin: "0 0 16px 0", color: "#1e293b" }}>Create New Team Group</h3>
@@ -460,6 +450,7 @@ export default function TeamCollaboration() {
                   groups.map((g) => (
                     <div
                       key={g.id}
+                      className="team-group-list-row"
                       onClick={() => setSelectedGroup(g)}
                       style={{
                         padding: "16px",
@@ -475,7 +466,7 @@ export default function TeamCollaboration() {
                     >
                       <div>
                         <div style={{ fontWeight: "600", color: "#1e293b", fontSize: "16px" }}>{g.name}</div>
-                        <div style={{ fontSize: "12px", color: "#64748b", marginTop: "4px" }}>👑 Owner: {g.created_by_details?.username}</div>
+                        <div style={{ fontSize: "12px", color: "#64748b", marginTop: "4px" }}>👑 Owner: {g.created_by_details?.username === currentUser ? "You" : g.created_by_details?.username}</div>
                       </div>
                       <span style={{ background: "#e0e7ff", color: "#4338ca", padding: "6px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "700" }}>
                         {g.progress || g.progress_percentage || 0}% Done
@@ -489,7 +480,7 @@ export default function TeamCollaboration() {
           </div>
         </div>
       ) : (
-        /* VIEW 2: Workspace Detail Layout */
+        
         <div>
           <button
             onClick={() => {
@@ -516,7 +507,7 @@ export default function TeamCollaboration() {
           {/* Group Details Card */}
           <div className="modern-card">
             {/* Header Section */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "20px" }}>
+            <div className="team-group-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "20px" }}>
               <div>
                 <h1 style={{ margin: 0, fontSize: "28px", color: "#0f172a", fontWeight: "700" }}>{selectedGroup.name}</h1>
                 <p style={{ color: "#64748b", marginTop: "6px", fontSize: "14px", lineHeight: "1.5" }}>
@@ -588,7 +579,7 @@ export default function TeamCollaboration() {
             <hr style={{ margin: "24px 0", border: "0", borderTop: "1px solid #f1f5f9" }} />
 
             {/* Grid 1: Invite & Members */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+            <div className="team-invite-members-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
               <div>
                 <h4 style={{ margin: "0 0 12px 0", color: "#334155" }}>Invite Member</h4>
                 {isOwner ? (
@@ -612,13 +603,17 @@ export default function TeamCollaboration() {
                 <h4 style={{ margin: "0 0 12px 0", color: "#334155" }}>Group Members ({allGroupMembers.length + 1})</h4>
                 <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                   <span className="badge badge-owner">
-                    👑 Owner: {selectedGroup.created_by_details?.username || selectedGroup.created_by_username || "Owner"}
+                    👑 Owner: {isOwner ? "You" : (selectedGroup.created_by_details?.username || selectedGroup.created_by_username || "Owner")}
                   </span>
-                  {allGroupMembers.map((m) => (
-                    <span key={m.id} className={`badge ${m.status === "Accepted" ? "badge-accepted" : "badge-pending"}`}>
-                      👤 {m.user_username || m.user_details?.username || m.username || "User"} ({m.status})
-                    </span>
-                  ))}
+                  {allGroupMembers.map((m) => {
+                    const memberUsername = m.user_username || m.user_details?.username || m.username || "User";
+                    const isSelf = m.user_details?.username === currentUser;
+                    return (
+                      <span key={m.id} className={`badge ${m.status === "Accepted" ? "badge-accepted" : "badge-pending"}`}>
+                        👤 {isSelf ? "You" : memberUsername} ({m.status})
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -709,7 +704,7 @@ export default function TeamCollaboration() {
                         boxShadow: "0 2px 6px rgba(0,0,0,0.02)"
                       }}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div className="team-task-row-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <div>
                           <h4 style={{ margin: 0, fontSize: "18px", color: "#1e293b" }}>{gt.title}</h4>
                           {gt.description && <p style={{ color: "#64748b", fontSize: "14px", marginTop: "4px", margin: 0 }}>{gt.description}</p>}
@@ -765,6 +760,7 @@ export default function TeamCollaboration() {
                               return (
                                 <div
                                   key={st.id}
+                                  className="team-subtask-row"
                                   style={{
                                     display: "flex",
                                     justifyContent: "space-between",
@@ -810,15 +806,18 @@ export default function TeamCollaboration() {
                                         }}
                                       >
                                         <option value="">-- Assign Member --</option>
+                                        <option value={selectedGroup.created_by_details?.id || selectedGroup.created_by}>
+                                          👤 You
+                                        </option>
                                         {allGroupMembers.map((m) => (
                                           <option key={m.id} value={m.user}>
-                                            👤 {m.user_details?.username}
+                                            👤 {m.user_details?.username === currentUser ? "You" : m.user_details?.username}
                                           </option>
                                         ))}
                                       </select>
                                     ) : (
                                       <span style={{ fontSize: "12px", color: "#64748b" }}>
-                                        👤 {st.assigned_to_details?.username || "Unassigned"}
+                                        👤 {isSubtaskAssignedToMe ? "You" : (st.assigned_to_details?.username || "Unassigned")}
                                       </span>
                                     )}
 

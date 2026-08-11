@@ -4,8 +4,10 @@ import api from "../services/api";
 import Sidebar from "../components/Sidebar";
 import ProgressBar from "../components/ProgressBar";
 import NotificationBell from "../components/NotificationBell";
+import ProfileButton from "../components/ProfileButton";
 import { isToday, isUpcoming, formatFriendlyDate, statusProgress } from "../utils/schedule";
 import { useTaskReminders } from "../utils/useTaskReminders";
+import { ensureUserId } from "../utils/authStorage";
 import "../styles/dashboard.css";
 
 function ProgressRing({ percent, size = 64 }) {
@@ -38,7 +40,7 @@ function Dashboard() {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [categories, setCategories] = useState([]);
-  const username = localStorage.getItem("username") || "there";
+  const [username, setUsername] = useState(localStorage.getItem("username") || "there");
 
   const fetchTasks = () => {
     api.get("/tasks/api/").then((res) => setTasks(res.data)).catch(console.log);
@@ -47,6 +49,7 @@ function Dashboard() {
   useEffect(() => {
     fetchTasks();
     api.get("/tasks/categories/").then((res) => setCategories(res.data)).catch(console.log);
+    ensureUserId();
   }, []);
 
   useTaskReminders(tasks);
@@ -59,11 +62,9 @@ function Dashboard() {
     return task.progress ?? statusProgress(task.status);
   };
 
-  // Toggle Subtask Checked State & Sync Progress UI
   const handleToggleSubtask = (taskId, subtaskId, currentStatus) => {
     const updatedStatus = !currentStatus;
 
-    // 1. Optimistic UI Update (Immediate response on UI)
     setTasks((prevTasks) =>
       prevTasks.map((t) => {
         if (t.id === taskId) {
@@ -71,7 +72,7 @@ function Dashboard() {
             st.id === subtaskId ? { ...st, is_completed: updatedStatus } : st
           );
           
-          // Recalculate status automatically
+        
           const completedCount = newSubtasks.filter((s) => s.is_completed).length;
           let newStatus = t.status;
           if (completedCount === newSubtasks.length) newStatus = "Completed";
@@ -84,20 +85,20 @@ function Dashboard() {
       })
     );
 
-    // 2. Persistent Backend Update
+   
     api
       .patch(`/tasks/subtasks/${subtaskId}/`, { is_completed: updatedStatus })
       .then(() => fetchTasks())
       .catch((err) => {
         console.error("Failed to update subtask state", err);
-        fetchTasks(); // Revert back if API fails
+        fetchTasks(); 
       });
   };
 
   const pending = tasks.filter((t) => t.status === "Pending");
   const completed = tasks.filter((t) => t.status === "Completed");
 
-  // Overall Completion Rate across ALL tasks
+
   const totalPercentageSum = tasks.reduce((acc, task) => acc + calculateTaskProgress(task), 0);
   const completionRate = tasks.length ? Math.round(totalPercentageSum / tasks.length) : 0;
 
@@ -113,7 +114,10 @@ function Dashboard() {
         
         <div className="dash-topbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
           <h1 style={{ fontSize: "28px", fontWeight: "700", color: "#0f172a", margin: 0 }}>Dashboard</h1>
-          <NotificationBell />
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <NotificationBell />
+            <ProfileButton onUsernameChange={setUsername} />
+          </div>
         </div>
         <p className="dash-welcome" style={{ color: "#64748b", margin: "0 0 24px 0", fontSize: "15px" }}>Welcome back, {username}</p>
 
@@ -137,7 +141,7 @@ function Dashboard() {
             )}
           </section>
 
-          {/* Weekly Stats Overview */}
+         
           <section className="glass-panel-strong dash-card dash-overview" style={{ padding: "20px", borderRadius: "14px", background: "#ffffff", border: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ flex: 1 }}>
               <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#1e293b" }}>This week</h3>
@@ -190,7 +194,7 @@ function Dashboard() {
             )}
           </section>
 
-          {/* Upcoming Schedule */}
+         
           <section className="glass-panel-strong dash-card schedule-card" style={{ padding: "20px", borderRadius: "14px", background: "#ffffff", border: "1px solid #e2e8f0" }}>
             <div className="dash-card-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <h3 style={{ margin: 0, fontSize: "18px", color: "#1e293b" }}>Upcoming Schedule</h3>
@@ -214,7 +218,7 @@ function Dashboard() {
           </section>
         </div>
 
-        {/* All Tasks & Progress Section */}
+        
         <section className="glass-panel-strong dash-tasks" style={{ padding: "20px", borderRadius: "14px", background: "#ffffff", border: "1px solid #e2e8f0" }}>
           <div className="dash-card-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
             <h3 style={{ margin: 0, fontSize: "18px", color: "#1e293b" }}>All tasks &amp; progress</h3>
@@ -266,7 +270,6 @@ function Dashboard() {
                       </div>
                     </div>
 
-                    {/* Interactive Subtasks Checklist */}
                     {task.subtasks && task.subtasks.length > 0 && (
                       <div className="subtasks-checklist-container" style={{ display: "flex", flexDirection: "column", gap: "8px", paddingTop: "10px", borderTop: "1px solid #e2e8f0" }}>
                         {task.subtasks.map((st) => (

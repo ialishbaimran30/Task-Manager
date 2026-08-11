@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../services/api";
 import CategoryModal from "../components/CategoryModal";
-// import TagModal from "../components/TagModal";
 import Sidebar from "../components/Sidebar";
 import { showToast } from "../utils/toast";
 import "../styles/taskform.css";
@@ -35,7 +34,7 @@ function TaskForm() {
   const [hasSubtasks, setHasSubtasks] = useState(draft?.hasSubtasks || false);
   const [subtasks, setSubtasks] = useState(draft?.subtasks || []);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("")
-  
+
 
   useEffect(() => {
     if (id) return; 
@@ -79,10 +78,27 @@ function TaskForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    if (!description.trim()) {
+      showToast("Please enter a description.", "error");
+      return;
+    }
+
+    // 2. Check whether title exceeds 200 characters
+    if (title.length > 200) {
+      showToast("Couldn't save task. Characters must be less than 200.", "error");
+      return;
+    }
+
+    // 3. Check whether description exceeds 200 characters
+    if (description.length > 200) {
+      showToast("Couldn't save task. Characters must be less than 200.", "error");
+      return;
+    }
     if (!title.trim()) {
       showToast("Please enter a title.", "error");
       return;
     }
+    
     if (!dueDate) {
       showToast("Please pick a due date.", "error");
       return;

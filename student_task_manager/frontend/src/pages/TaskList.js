@@ -66,7 +66,11 @@ function TaskList() {
   const loadTasks = () => {
     api
       .get("/tasks/api/")
-      .then((response) => setTasks(response.data))
+      .then((response) =>{
+        // Sort by id ascending to maintain original creation order
+        const sortedTasks = response.data.sort((a, b) => a.id - b.id);
+        setTasks(sortedTasks);
+      })
       .catch((error) => console.log(error));
   };
 
@@ -85,10 +89,11 @@ function TaskList() {
   };
 
   const updateTask = (updated) => {
-    setTasks((prev) => prev.map((t) => (t.id === updated.id ? { ...t, ...updated } : t)));
+    setTasks((prev) => prev.map((t) => (t.id === updated.id ? { ...t, ...updated } : t))
+    .sort((a, b) => a.id - b.id));
   };
 
-  // Naya code (Title + Due Date dono search honge):
+ 
 const filteredTasks = tasks.filter((t) => {
   const query = searchQuery.trim().toLowerCase();
   const matchTitle = t.title.toLowerCase().includes(query);
@@ -151,15 +156,22 @@ const filteredTasks = tasks.filter((t) => {
                 <span className="kanban-count">{pending.length}</span>
               </div>
               <div className="kanban-column-body">
-                {pending.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onEdit={(id) => navigate(`/tasks/edit/${id}`)}
-                    onDelete={deleteTask}
-                    onUpdate={updateTask}
-                  />
-                ))}
+                {pending.length === 0 ? (
+                  <div className="column-empty-state">
+                    <p>No pending tasks</p>
+                   
+                  </div>
+                ) : (
+                  pending.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onEdit={(id) => navigate(`/tasks/edit/${id}`)}
+                      onDelete={deleteTask}
+                      onUpdate={updateTask}
+                    />
+                  ))
+                )}
               </div>
             </div>
 
@@ -170,15 +182,22 @@ const filteredTasks = tasks.filter((t) => {
                 <span className="kanban-count">{completed.length}</span>
               </div>
               <div className="kanban-column-body">
-                {completed.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onEdit={(id) => navigate(`/tasks/edit/${id}`)}
-                    onDelete={deleteTask}
-                    onUpdate={updateTask}
-                  />
-                ))}
+                {completed.length === 0 ? (
+                  <div className="column-empty-state">
+                    
+                    <p>Completed tasks will appear here.</p>
+                  </div>
+                ) : (
+                  completed.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onEdit={(id) => navigate(`/tasks/edit/${id}`)}
+                      onDelete={deleteTask}
+                      onUpdate={updateTask}
+                    />
+                  ))
+                )}
               </div>
             </div>
           </div>

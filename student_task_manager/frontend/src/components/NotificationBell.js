@@ -20,18 +20,17 @@ function NotificationBell() {
   const socketRef = useRef(null);
   const panelRef = useRef(null);
 
-  // Load previously saved notifications on mount
   useEffect(() => {
     api.get("/tasks/notifications/").then((res) => setNotifications(res.data)).catch(console.log);
   }, []);
 
-  // Open a live WebSocket connection so new notifications appear without refreshing
+
   useEffect(() => {
     const token = localStorage.getItem("access");
     if (!token) return;
 
     const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
-    const host = "127.0.0.1:8000"; // change if your backend runs elsewhere
+    const host = "127.0.0.1:8000"; 
     const socket = new WebSocket(`${wsProtocol}://${host}/ws/notifications/?token=${token}`);
 
     socket.onmessage = (event) => {
@@ -45,7 +44,7 @@ function NotificationBell() {
     return () => socket.close();
   }, []);
 
-  // Close dropdown when clicking outside
+
   useEffect(() => {
     const handleClick = (e) => {
       if (panelRef.current && !panelRef.current.contains(e.target)) setOpen(false);
@@ -69,28 +68,25 @@ function NotificationBell() {
   };
 
   const handleNotificationClick = (n) => {
-    // Pehle notification ko read mark kar dein agar unread hai
+   
     if (!n.is_read) {
       markOneRead(n.id);
     }
 
-    // Dropdown close kar dein
+   
     setOpen(false);
 
-    // Yahan aap apne URL par navigate kar sakte hain
-    // Misal ke taur par agar backend se koi link ya group/task ID aa rahi hai:
     if (n.link) {
       navigate(n.link);
     } else {
-      // Default route jahan aap user ko bhejna chahte hain (jaise team collaboration page)
-      navigate("/team"); // <-- Apka target URL/path
+      navigate("/team"); 
     }
   };
 
   const clearAllNotifications = () => {
-    api.post("/tasks/notifications/clear_all/") // Apne backend ka endpoint yahan likhein agar alag ho
+    api.post("/tasks/notifications/clear_all/") 
       .then(() => {
-        setNotifications([]); // State ko empty kar dega
+        setNotifications([]); 
       })
       .catch((err) => console.log("Failed to clear notifications", err));
   };

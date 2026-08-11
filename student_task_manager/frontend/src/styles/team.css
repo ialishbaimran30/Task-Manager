@@ -123,3 +123,22 @@
   left: 50% !important;
   transform: translateX(-50%) !important;
 }
+
+/* Responsive overrides - TeamCollaboration.js sets these containers'
+   layout via inline style, which beats plain stylesheet rules, so
+   !important is required here (same technique as .custom-pill-toast above). */
+@media (max-width: 900px) {
+  .team-groups-grid { grid-template-columns: 1fr !important; }
+  .team-invite-members-grid { grid-template-columns: 1fr !important; }
+}
+
+@media (max-width: 768px) {
+  .team-group-header { flex-direction: column !important; align-items: flex-start !important; }
+}
+
+@media (max-width: 480px) {
+  .team-group-list-row { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
+  .team-task-row-head { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
+  .team-subtask-row { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
+  .invite-chip { flex-direction: column !important; align-items: flex-start !important; }
+}
