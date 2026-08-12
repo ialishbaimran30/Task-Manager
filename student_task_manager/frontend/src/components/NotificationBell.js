@@ -68,18 +68,20 @@ function NotificationBell() {
   };
 
   const handleNotificationClick = (n) => {
-   
+
     if (!n.is_read) {
       markOneRead(n.id);
     }
 
-   
+
     setOpen(false);
+
+    const isGroupInvite = n.message && n.message.includes("invited to join group");
 
     if (n.link) {
       navigate(n.link);
-    } else {
-      navigate("/team"); 
+    } else if (isGroupInvite) {
+      navigate("/team");
     }
   };
 
