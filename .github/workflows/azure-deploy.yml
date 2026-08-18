@@ -1,0 +1,76 @@
+name: Deploy backend to Azure App Service
+
+# Builds the Django backend's Docker image, pushes it to Azure Container
+# Registry, and deploys it to Azure App Service (Web App for Containers).
+#
+# Required GitHub repository secrets (Settings -> Secrets and variables ->
+# Actions) — see README/deployment docs for how to obtain each one:
+#   AZURE_CLIENT_ID          - App registration (federated credential) client ID
+#   AZURE_TENANT_ID          - Azure AD tenant ID
+#   AZURE_SUBSCRIPTION_ID    - Azure subscription ID
+#   AZURE_ACR_NAME           - Azure Container Registry name (no domain, e.g. "taskmanageracr")
+#   AZURE_WEBAPP_NAME        - Azure App Service (Web App) name
+#
+# No client secret / registry password is used: authentication to Azure is
+# done via OpenID Connect (azure/login), and the deployment pipeline's
+# service principal is granted AcrPush on the registry and Contributor (or
+# Website Contributor) on the Web App instead of a long-lived credential.
+
+on:
+  push:
+    branches:
+      - task-manager
+    paths:
+      - "student_task_manager/backend/**"
+      - ".github/workflows/azure-deploy.yml"
+  workflow_dispatch: {}
+
+permissions:
+  id-token: write # required for OIDC login to Azure
+  contents: read
+
+env:
+  BACKEND_DIR: student_task_manager/backend
+  IMAGE_NAME: task-manager-backend
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Azure (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to Azure Container Registry
+        run: az acr login --name "${{ secrets.AZURE_ACR_NAME }}"
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.BACKEND_DIR }}
+          push: true
+          tags: |
+            ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy container to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          images: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Log out of Azure
+        if: always()
+        run: az logout

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
+import api, { BASE_URL } from "../services/api";
 import "../styles/Notificationbell.css";
 
 function timeAgo(iso) {
@@ -30,7 +30,7 @@ function NotificationBell() {
     if (!token) return;
 
     const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
-    const host = "127.0.0.1:8000"; 
+    const host = BASE_URL.replace(/^https?:\/\//, "");
     const socket = new WebSocket(`${wsProtocol}://${host}/ws/notifications/?token=${token}`);
 
     socket.onmessage = (event) => {

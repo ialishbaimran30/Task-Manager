@@ -38,12 +38,23 @@ _load_env_file(BASE_DIR / ".env")
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-@xj4oygjltnu)u9n2ezp0mz*hx7iyl)t8xjtmuvq#^tgj6dl28'
+# In production this MUST be overridden via the DJANGO_SECRET_KEY env var
+# (set as an Azure App Service application setting / GitHub secret). The
+# fallback below is only ever used for local dev.
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-@xj4oygjltnu)u9n2ezp0mz*hx7iyl)t8xjtmuvq#^tgj6dl28",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Defaults to False (fail-safe); local dev sets DJANGO_DEBUG=True in .env
+DEBUG = os.environ.get("DJANGO_DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    if h.strip()
+]
 
 
 # Application definition
@@ -66,6 +77,11 @@ INSTALLED_APPS = [
 
 ASGI_APPLICATION = "student_task_manager.asgi.application"   
 
+# NOTE: InMemoryChannelLayer only broadcasts within a single process/instance.
+# Fine for one App Service instance; if you scale out to multiple instances
+# (or multiple workers), a user's websocket notification may be delivered by
+# a different instance than the one that triggered it. Move to channels_redis
+# (e.g. Azure Cache for Redis) if you need reliable cross-instance delivery.
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer"
@@ -78,6 +94,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -117,11 +134,14 @@ WSGI_APPLICATION = 'student_task_manager.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER':'postgres',
-        'PASSWORD':'Toyy5498jj78.',
-        'HOST' : 'localhost',
-        'PORT':'5432'
+        'NAME': os.environ.get('DB_NAME', 'postgres'),
+        'USER': os.environ.get('DB_USER', 'postgres'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
+        'OPTIONS': {
+            'sslmode': os.environ.get('DB_SSLMODE', 'prefer' if DEBUG else 'require'),
+        },
     }
 }
 
@@ -161,10 +181,21 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_DIRS = [
     BASE_DIR / "student_task_manager" / "static",
 ]
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -172,14 +203,35 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+    o.strip()
+    for o in os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+    if o.strip()
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
+    o.strip()
+    for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "http://localhost:3000").split(",")
+    if o.strip()
 ]
 
-GOOGLE_CLIENT_ID = "536106975589-2c1se0n3oa42duhtikdp4icg096cup3k.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID = os.environ.get(
+    "GOOGLE_CLIENT_ID",
+    "536106975589-2c1se0n3oa42duhtikdp4icg096cup3k.apps.googleusercontent.com",
+)
+
+# Production security settings (Azure App Service terminates TLS at the
+# front-end load balancer and forwards over HTTP with X-Forwarded-Proto,
+# hence SECURE_PROXY_SSL_HEADER).
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    X_FRAME_OPTIONS = "DENY"
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")

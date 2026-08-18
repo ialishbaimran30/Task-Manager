@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import api from "../services/api";
 import Sidebar from "../components/Sidebar";
 import "../styles/team.css";
-import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
@@ -56,6 +55,7 @@ export default function TeamCollaboration() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSelectExistingTask = (e) => {
@@ -139,6 +139,7 @@ export default function TeamCollaboration() {
     });
   };
 
+  // eslint-disable-next-line no-unused-vars
   const handleAssigneeCheckboxChange = (userId) => {
     if (selectedAssignees.includes(userId)) {
       setSelectedAssignees(selectedAssignees.filter((id) => id !== userId));
@@ -151,8 +152,6 @@ export default function TeamCollaboration() {
   const handleAssignImportedTask = async (e) => {
     e.preventDefault();
     if (!selectedExistingTaskId || !selectedGroup) return;
-
-    const token = localStorage.getItem("token") || localStorage.getItem("access");
 
     try {
       const taskToImport = userPersonalTasks.find(
@@ -172,16 +171,7 @@ export default function TeamCollaboration() {
         assignees: []
       };
 
-      const res = await axios.post(
-        "http://127.0.0.1:8000/tasks/group-tasks/",
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
+      const res = await api.post("/tasks/group-tasks/", payload);
 
       toast("Task assigned successfully!");
       setSelectedExistingTaskId("");
@@ -207,8 +197,6 @@ export default function TeamCollaboration() {
     e.preventDefault();
     if (!modalTitle.trim() || !selectedGroup) return;
 
-    const token = localStorage.getItem("token") || localStorage.getItem("access");
-
     try {
       const payload = {
         group: selectedGroup.id,
@@ -218,16 +206,7 @@ export default function TeamCollaboration() {
         assignees: []
       };
 
-      const res = await axios.post(
-        "http://127.0.0.1:8000/tasks/group-tasks/",
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
+      const res = await api.post("/tasks/group-tasks/", payload);
 
       toast("Task saved");
 
@@ -269,6 +248,7 @@ export default function TeamCollaboration() {
   };
 
  
+  // eslint-disable-next-line no-unused-vars
   const handleModalAssigneeCheckboxChange = (userId) => {
     if (modalAssignees.includes(userId)) {
       setModalAssignees(modalAssignees.filter((id) => id !== userId));

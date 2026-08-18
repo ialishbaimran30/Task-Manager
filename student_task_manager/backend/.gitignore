@@ -5,3 +5,5 @@ __pycache__/
 *$py.class
 **/migrations/*
 !**/migrations/__init__.py
+staticfiles/
+db.sqlite3

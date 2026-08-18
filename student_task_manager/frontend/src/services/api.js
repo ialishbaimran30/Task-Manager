@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://127.0.0.1:8000"; // change if your backend runs elsewhere
+export const BASE_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -12,8 +12,6 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  console.log("Token:", token);
-  console.log("Headers:", config.headers);
   return config;
 });
 

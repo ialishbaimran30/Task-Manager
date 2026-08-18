@@ -31,7 +31,6 @@ function Login() {
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
       localStorage.setItem("username", res.data.username);
-      console.log("Client ID:", process.env.REACT_APP_GOOGLE_CLIENT_ID);
       showToast("Signed in successfully");
 
       navigate("/dashboard");

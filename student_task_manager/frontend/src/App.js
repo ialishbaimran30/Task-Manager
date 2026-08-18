@@ -7,7 +7,6 @@ import TaskList from "./pages/TaskList";
 import TaskForm from "./pages/TaskForm";
 import CategoryPage from "./pages/CategoryPage";
 import TeamCollaboration from "./pages/TeamCollaboration";
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 function App() {
   return (
     <>
