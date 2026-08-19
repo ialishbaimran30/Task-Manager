@@ -222,9 +222,18 @@ GOOGLE_CLIENT_ID = os.environ.get(
 # Production security settings (Azure App Service terminates TLS at the
 # front-end load balancer and forwards over HTTP with X-Forwarded-Proto,
 # hence SECURE_PROXY_SSL_HEADER).
+#
+# SECURE_SSL_REDIRECT is deliberately left False: Azure App Service's own
+# internal container health/readiness probe hits the container directly
+# over plain HTTP without setting X-Forwarded-Proto, so Django would 301
+# that probe request. Azure then reads the 301 as "container not ready"
+# and serves its own 503 to real users instead of proxying to it — the
+# container itself is healthy the whole time, it's just never reached.
+# Azure's edge already enforces HTTPS for genuine external traffic
+# (HTTPS Only), so an app-level redirect here is redundant for real
+# users and actively breaks the platform's health check.
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-    SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
